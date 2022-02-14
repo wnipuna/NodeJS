@@ -16,20 +16,21 @@ router.get('/', (req, res) => {
 router.get('/excel', (req, res) => {
     Person.find()
         .then((result) => {
-            const writeStream = fs.createWriteStream("file.xls");
             const header = "Name" + "\t" + " Age" + "\n";
-            writeStream.write(header);
+            fs.writeFileSync("file.xls",header);
             for (let i = 0; i < result.length; i++) {
                 const row = result[i].name + "\t" + result[i].age + "\n";
-                writeStream.write(row);
+                fs.writeFileSync("file.xls",row, {
+                    flag: "a+",
+                  });
             }
-            writeStream.close();
+        }).then(() => {
+            res.setHeader('Content-disposition', 'attachment; filename=file.xls');
+            var filestream = fs.createReadStream(__dirname + '/../file.xls');
+            filestream.pipe(res);
         }).catch((err) => {
             res.send(err);
         });
-    res.setHeader('Content-disposition', 'attachment; filename=file.xls');
-    var filestream = fs.createReadStream(__dirname + '/../file.xls');
-    filestream.pipe(res);
 });
 
 router.get('/:id', (req, res) => {
